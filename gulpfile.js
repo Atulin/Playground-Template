@@ -9,7 +9,7 @@ const Fiber = require('fibers');
 // CSS processors
 const autoprefixer = require('autoprefixer');
 const discard = require('postcss-discard-comments');
-const mqpacker = require('css-mqpacker');
+const mqpacker = require('@hail2u/css-mqpacker');
 const nano = require('cssnano');
 
 // JS processors
@@ -29,6 +29,14 @@ const dir = {
     }
 }
 
+// It's important to glob SASS without the use of `**`. A bug in either
+// SASS compiler, Gulp-SASS, or Gulp itself causes it to increase SASS
+// compilation times with every compilation
+const sassGlob = [
+    './src/css/*.sass',
+    './src/css/elements/*.sass'
+]
+
 // CSS tasks
 gulp.task('css', () => {
     const processors = [
@@ -46,7 +54,7 @@ gulp.task('css', () => {
         .pipe(gulp.dest(dir.css.dist))          // Output minified CSS
 });
 
-gulp.task('watch:css', () => gulp.watch('**/*.sass', gulp.series('css')));
+gulp.task('watch:css', () => gulp.watch(sassGlob, gulp.series('css')));
 
 // JS tasks
 gulp.task('js', () => {
