@@ -1,87 +1,88 @@
-const gulp = require('gulp');
-const postcss = require('gulp-postcss');
-const sass = require('gulp-sass');
-sass.compiler = require('sass');
+const gulp = require("gulp");
+const postcss = require("gulp-postcss");
+const sass = require("gulp-sass");
+sass.compiler = require("sass");
 const rename = require("gulp-rename");
 const sourcemaps = require("gulp-sourcemaps");
-const Fiber = require('fibers');
 
 // CSS processors
-const autoprefixer = require('autoprefixer');
-const discard = require('postcss-discard-comments');
-const mqpacker = require('@hail2u/css-mqpacker');
-const nano = require('cssnano');
+const autoprefixer = require("autoprefixer");
+const discard = require("postcss-discard-comments");
+const mqpacker = require("@hail2u/css-mqpacker");
+const nano = require("cssnano");
 
 // JS processors
-const ts = require('gulp-typescript');
-const tsProject = ts.createProject('./tsconfig.json');
-const terser = require('gulp-terser-js');
+const ts = require("gulp-typescript");
+const tsProject = ts.createProject("./tsconfig.json");
+const terser = require("gulp-terser-js");
 
 // Dirs
 const dir = {
-    css: {
-        src: './src/css',
-        dist: './dist/css'
-    },
-    js: {
-        src: './src/js',
-        dist: './dist/js'
-    }
-}
+	css: {
+		src: "./src/css",
+		dist: "./dist/css",
+	},
+	js: {
+		src: "./src/js",
+		dist: "./dist/js",
+	},
+};
 
 // It's important to glob SASS without the use of `**`. A bug in either
 // SASS compiler, Gulp-SASS, or Gulp itself causes it to increase SASS
 // compilation times with every compilation
-const sassGlob = [
-    './src/css/*.sass',
-    './src/css/elements/*.sass'
-]
+const sassGlob = ["./src/css/*.sass", "./src/css/elements/*.sass"];
 
 // CSS tasks
-gulp.task('css', () => {
-    const processors = [
-        autoprefixer,
-        discard({ removeAll: true }),
-        mqpacker,
-        nano({ preset: 'default' })
-    ];
+gulp.task("css", () => {
+	const processors = [
+		autoprefixer,
+		discard({ removeAll: true }),
+		mqpacker,
+		nano({ preset: "default" }),
+	];
 
-    return gulp.src(`${dir.css.src}/*.sass`)
-        .pipe(sass({fiber: Fiber}))     // Compile SASS
-        .pipe(gulp.dest(dir.css.dist))          // Output the raw CSS
-        .pipe(postcss(processors))              // Postprocess it
-        .pipe(rename({ suffix: '.min' }))  // Add .min suffix
-        .pipe(gulp.dest(dir.css.dist))          // Output minified CSS
+	return gulp
+		.src(`${dir.css.src}/*.sass`)
+		.pipe(sass) // Compile SASS
+		.pipe(gulp.dest(dir.css.dist)) // Output the raw CSS
+		.pipe(postcss(processors)) // Postprocess it
+		.pipe(rename({ suffix: ".min" })) // Add .min suffix
+		.pipe(gulp.dest(dir.css.dist)); // Output minified CSS
 });
 
-gulp.task('watch:css', () => gulp.watch(sassGlob, gulp.series('css')));
+gulp.task("watch:css", () => gulp.watch(sassGlob, gulp.series("css")));
 
 // JS tasks
-gulp.task('js', () => {
-    return gulp.src(`${dir.js.src}/*.js`)
-        .pipe(rename({ suffix: '.min' }))
-        .pipe(sourcemaps.init())
-        .pipe(terser({ mangle: { toplevel: true } }))
-        .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest(dir.js.dist));
+gulp.task("js", () => {
+	return gulp
+		.src(`${dir.js.src}/*.js`)
+		.pipe(rename({ suffix: ".min" }))
+		.pipe(sourcemaps.init())
+		.pipe(terser({ mangle: { toplevel: true } }))
+		.pipe(sourcemaps.write("./"))
+		.pipe(gulp.dest(dir.js.dist));
 });
 
-gulp.task('watch:js', () => gulp.watch(`${dir.js.src}/*.js`, gulp.series('js')));
+gulp.task("watch:js", () =>
+	gulp.watch(`${dir.js.src}/*.js`, gulp.series("js")),
+);
 
 // TS tasks
-gulp.task('ts', () => {
-    return gulp.src(`${dir.js.src}/*.ts`)
-        .pipe(sourcemaps.init())
-        .pipe(tsProject())
-        .pipe(gulp.dest(dir.js.dist))
-        .pipe(rename({ suffix: '.min' }))
-        .pipe(terser({ mangle: { toplevel: true } }))
-        .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest(dir.js.dist));
+gulp.task("ts", () => {
+	return gulp
+		.src(`${dir.js.src}/*.ts`)
+		.pipe(sourcemaps.init())
+		.pipe(tsProject())
+		.pipe(gulp.dest(dir.js.dist))
+		.pipe(rename({ suffix: ".min" }))
+		.pipe(terser({ mangle: { toplevel: true } }))
+		.pipe(sourcemaps.write("./"))
+		.pipe(gulp.dest(dir.js.dist));
 });
 
-gulp.task('watch:ts', () => gulp.watch(`${dir.js.src}/*.ts`, gulp.series(ts)))
+gulp.task("watch:ts", () => gulp.watch(`${dir.js.src}/*.ts`, gulp.series(ts)));
 
 // All tasks
-gulp.task('all', gulp.parallel(['css', 'js', 'ts']));
-gulp.task('watch:all', gulp.parallel(['watch:css', 'watch:js', 'watch:ts']));
+gulp.task("all", gulp.parallel(["css", "js", "ts"]));
+gulp.task("watch:all", gulp.parallel(["watch:css", "watch:js", "watch:ts"]));
